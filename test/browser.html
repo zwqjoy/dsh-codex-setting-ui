@@ -34,4 +34,5 @@ document.querySelector('#run').onclick=async()=>{let results=[];try{
  panel.remove();await settle();open();await settle();results.push(check(panel.querySelectorAll('[data-dcs-nav]').length===1,'close and reopen do not duplicate controls'));
  panel.remove();document.querySelector('#result').textContent=results.join('\n')+'\nALL PASS';
  }catch(error){panel?.remove();document.querySelector('#result').textContent=results.join('\n')+'\nFAIL '+error.stack;}};
+window.dcsTest={runtime,catalog,stop:()=>off?.()};
 </script></html>

@@ -40,3 +40,8 @@ body[data-ds-dark-theme] [data-dcs-settings],html[data-theme=dark] [data-dcs-set
  [data-dcs-options] {padding:12px 20px 40px!important}
 }
 @media(prefers-reduced-motion:reduce) {[data-dcs-nav] button {transition:none}}
+[data-dcs-features]{margin-top:16px;padding-top:16px;border-top:1px solid var(--dcs-border)}
+[data-dcs-features]>label{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--dcs-text);cursor:pointer}
+[data-dcs-features] input[type=checkbox]{width:16px;height:16px;margin:0;accent-color:#4263eb}
+[data-dcs-features]>p{font-size:12px;line-height:1.5;color:var(--dcs-muted);margin:8px 0 0}
+@media(max-width:680px){[data-dcs-features]{grid-column:1/-1;margin-top:0}}

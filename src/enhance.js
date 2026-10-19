@@ -2,7 +2,7 @@ import { GROUPS, COPY, groupFor, matches, languageFor } from './navigation.js';
 
 // Layout only. The host retains its dialog, focus trap, shortcut, onboarding,
 // form components, navigation state and every persistence/API operation.
-export function enhanceSettings(document, getCatalog = () => []) {
+export function enhanceSettings(document, getCatalog = () => [], features) {
   const cleanups = new Map();
   let disposed = false;
   const win = document.defaultView;
@@ -30,6 +30,7 @@ export function enhanceSettings(document, getCatalog = () => []) {
     const status = document.createElement('p');
     status.setAttribute('role', 'status');
     root.append(label, groups, status);
+    const stopFeatures = features?.attach(root) ?? (() => {});
     nav.append(root);
     let signature = '';
     const navClick = event => {
@@ -101,6 +102,7 @@ export function enhanceSettings(document, getCatalog = () => []) {
       observer.disconnect();
       input.removeEventListener('input', refresh);
       groups.removeEventListener('click', navClick);
+      stopFeatures();
       root.remove();
       panel.removeAttribute('data-dcs-settings');
       list.removeAttribute('data-dcs-original');
