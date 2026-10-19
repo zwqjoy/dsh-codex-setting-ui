@@ -1,0 +1,37 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>Settings layout verification</title>
+<style>body{font:15px/1.5 system-ui;margin:0;background:#fafafa}#controls{padding:20px}button,input,select{font:inherit;padding:8px}button{cursor:pointer}#result{white-space:pre-wrap;padding:16px;color:#166534}nav button{display:block} [role=dialog]{position:fixed;inset:60px 80px;display:grid;grid-template-columns:180px 1fr;background:white;border:1px solid #ccc} [role=dialog]>nav{padding:24px} [data-form] label{display:flex;justify-content:space-between;gap:24px;padding:24px 0;border-bottom:1px solid var(--dcs-border,#ddd)} [data-form] h1{margin-top:0;font-size:28px;font-weight:600} [data-form] p{color:var(--dcs-muted,#666)} .row-help{font-size:13px;color:#777}#result:empty{display:none}</style>
+<div id="controls"><h1>设置布局插件验证</h1><p>本页面使用宿主相同结构的测试表单，不连接 Harness 配置。</p><button id="open">打开设置预览</button> <button id="run">运行浏览器检查</button> <button id="dark">切换浅深色</button></div><div id="result" role="status"></div>
+<script type="module">
+let runtime;
+window.__ModuleLoader__={load:spec=>{runtime=spec.factory();}};
+await import('../lib/client.js');
+const catalog=[{id:'general',label:'通用'},{id:'account',label:'账号'},{id:'models',label:'模型'},{id:'plugins',label:'插件'},{id:'archived-sessions',label:'归档会话'},{id:'about',label:'关于'}];
+let panel,off,saved='';
+function open(){panel?.remove();panel=document.createElement('div');panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('data-shortcut-modal','settings');panel.setAttribute('aria-label','设置');
+ const nav=document.createElement('nav');nav.innerHTML='<h2>设置</h2><div></div>';const list=nav.lastChild;
+ const content=document.createElement('div');content.innerHTML='<header><button aria-label="关闭设置">关闭设置 ×</button></header><div data-form></div>';content.firstChild.firstChild.onclick=()=>panel.remove();
+ function select(row){for(const b of list.children)b.setAttribute('aria-current',String(b.textContent===row.label));content.lastChild.innerHTML='<h1></h1><p></p>';content.querySelector('h1').textContent=row.label;content.querySelector('p').textContent='设置由原有表单渲染和保存。此处为本地测试表单。';if(row.id==='general'){content.lastChild.insertAdjacentHTML('beforeend','<label>主题<select aria-label="主题"><option>跟随系统</option><option>浅色</option><option>深色</option></select></label><label>回复字号<input aria-label="回复字号" type="number" value="16"></label><p class="row-help">调整阅读偏好，原有保存接口保持不变。</p>');content.querySelector('select').onchange=e=>{saved=e.target.value;};}}
+ for(const row of catalog){const b=document.createElement('button');b.textContent=row.label;b.onclick=()=>select(row);list.append(b);}select(catalog[0]);panel.append(nav,content);document.body.append(panel);list.firstChild.focus();return panel;}
+function start(){off?.();runtime.apply({slots:{entriesOfSlot:()=>catalog.map(row=>({options:row}))},effect:fn=>{off=fn();}});}start();
+document.querySelector('#open').onclick=open;
+document.querySelector('#dark').onclick=()=>document.body.toggleAttribute('data-ds-dark-theme');
+window.addEventListener('keydown',e=>{if(e.key==='Escape')panel?.remove();});
+const settle=()=>new Promise(r=>setTimeout(r,30));
+function check(value,message){if(!value)throw Error(message);return 'PASS '+message;}
+document.querySelector('#run').onclick=async()=>{let results=[];try{
+ open();await settle();results.push(check(panel.hasAttribute('data-dcs-settings'),'enhances host dialog'));
+ results.push(check(panel.querySelectorAll('[data-dcs-nav] button').length===6,'only registered categories shown'));
+ results.push(check(panel.querySelector('[data-dcs-nav]').contains(document.activeElement),'moves focus from hidden original navigation'));
+ const search=panel.querySelector('input[type=search]');search.value='模型';search.dispatchEvent(new Event('input'));results.push(check(panel.querySelectorAll('[data-dcs-nav] button').length===1,'search filters categories'));
+ panel.querySelector('[data-dcs-nav] button').click();await settle();results.push(check(panel.querySelector('[data-form] h1').textContent==='模型','mirrored navigation triggers host navigation'));
+ search.value='no-such-category';search.dispatchEvent(new Event('input'));results.push(check(panel.querySelector('[data-dcs-nav] [role=status]').textContent==='没有匹配的设置分类','empty search is visible'));
+ search.value='';search.dispatchEvent(new Event('input'));[...panel.querySelectorAll('[data-dcs-nav] button')].find(b=>b.textContent==='通用').click();await settle();
+ const select=panel.querySelector('select');select.value='深色';select.dispatchEvent(new Event('change'));results.push(check(saved==='深色','original save handler remains active'));
+ const list=panel.querySelector('[data-dcs-original]');const dynamic=document.createElement('button');dynamic.textContent='新扩展';dynamic.onclick=()=>{};list.append(dynamic);await settle();results.push(check(panel.querySelectorAll('[data-dcs-nav] button').length===7,'late registration appears'));
+ dynamic.remove();await settle();results.push(check(panel.querySelectorAll('[data-dcs-nav] button').length===6,'unregistered category disappears'));
+ off();results.push(check(!panel.hasAttribute('data-dcs-settings')&&!panel.querySelector('[data-dcs-nav]')&&!list.hasAttribute('data-dcs-original'),'disable restores host navigation'));
+ start();await settle();results.push(check(panel.querySelectorAll('[data-dcs-nav]').length===1,'reenable does not duplicate controls'));
+ panel.remove();await settle();open();await settle();results.push(check(panel.querySelectorAll('[data-dcs-nav]').length===1,'close and reopen do not duplicate controls'));
+ panel.remove();document.querySelector('#result').textContent=results.join('\n')+'\nALL PASS';
+ }catch(error){panel?.remove();document.querySelector('#result').textContent=results.join('\n')+'\nFAIL '+error.stack;}};
+</script></html>
