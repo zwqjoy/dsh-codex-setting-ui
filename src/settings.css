@@ -1,0 +1,42 @@
+[data-dcs-settings] {
+  --dcs-bg:#fff;--dcs-nav:#f5f5f4;--dcs-text:#252525;--dcs-muted:#666;--dcs-border:#e5e5e3;--dcs-hover:#eaeae7;--dcs-selected:#e4e4df;
+  position:fixed!important;inset:0!important;transform:none!important;margin:0!important;
+  width:100vw!important;max-width:none!important;height:100dvh!important;max-height:none!important;
+  display:grid!important;grid-template-columns:248px minmax(0,1fr)!important;border:0!important;border-radius:0!important;
+  background:var(--dcs-bg)!important;color:var(--dcs-text);overflow:hidden!important;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+body[data-ds-dark-theme] [data-dcs-settings],html[data-theme=dark] [data-dcs-settings] {
+  --dcs-bg:#1c1c1c;--dcs-nav:#222;--dcs-text:#ededeb;--dcs-muted:#aaa;--dcs-border:#363635;--dcs-hover:#30302e;--dcs-selected:#393936;color-scheme:dark;
+}
+[data-dcs-settings] > nav {min-height:0!important;overflow-y:auto!important;display:flex!important;flex-direction:column!important;background:var(--dcs-nav)!important;border-right:1px solid var(--dcs-border)!important;width:auto!important;padding:56px 16px 24px!important;gap:16px!important}
+[data-dcs-settings] > nav > :first-child {font-size:20px!important;font-weight:650!important;color:var(--dcs-text)!important;padding:0 8px!important;margin:0!important}
+[data-dcs-original] {display:none!important}
+[data-dcs-nav] {display:flex;flex-direction:column;gap:16px;min-height:0;color:var(--dcs-text)}
+[data-dcs-nav] * {box-sizing:border-box}
+[data-dcs-nav] label {display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--dcs-muted)}
+[data-dcs-nav] input {width:100%;min-height:40px;padding:8px 12px;border:1px solid var(--dcs-border);border-radius:8px;color:var(--dcs-text);background:var(--dcs-bg);font-size:14px;line-height:1.5;font-family:inherit}
+[data-dcs-nav] section {margin:0 0 20px}
+[data-dcs-nav] h2 {font:500 12px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;letter-spacing:.02em;color:var(--dcs-muted);padding:0 12px;margin:0 0 6px}
+[data-dcs-nav] button {width:100%;min-height:44px;display:flex;align-items:center;gap:10px;text-align:left;padding:10px 12px;margin:2px 0;border:0;border-radius:8px;font:400 14px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--dcs-text);background:transparent;cursor:pointer;transition:background 120ms ease}
+[data-dcs-nav] button:hover {background:var(--dcs-hover)}
+[data-dcs-nav] button[aria-current=page] {background:var(--dcs-selected);font-weight:600}
+[data-dcs-nav] svg {width:17px;height:17px;flex:none;opacity:.85}
+[data-dcs-nav] button span {overflow-wrap:anywhere}
+[data-dcs-nav] :focus-visible {outline:2px solid #5683cc;outline-offset:2px}
+[data-dcs-nav] [hidden] {display:none!important}
+[data-dcs-nav] [role=status] {margin:4px 8px;color:var(--dcs-muted);font-size:13px;line-height:1.6}
+[data-dcs-content] {min-width:0!important;min-height:0!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;background:var(--dcs-bg)!important;padding-top:44px!important}
+[data-dcs-content] > :first-child {flex-shrink:0!important;padding:12px 32px!important;min-height:48px!important}
+[data-dcs-options] {min-height:0!important;overflow:auto!important;flex:1!important;padding:24px max(32px,calc((100% - 960px)/2)) 64px!important;color:var(--dcs-text)}
+@media(max-width:680px) {
+ [data-dcs-settings] {grid-template-columns:1fr!important;grid-template-rows:minmax(180px,38dvh) minmax(0,1fr)!important}
+ [data-dcs-settings] > nav {padding:48px 16px 12px!important;border-right:0!important;border-bottom:1px solid var(--dcs-border)!important;gap:12px!important}
+ [data-dcs-nav] {display:grid;grid-template-columns:minmax(130px,1fr) minmax(0,2fr);gap:12px}
+ [data-dcs-nav] > :nth-child(2) {max-height:170px;overflow:auto}
+ [data-dcs-nav] section {margin-bottom:12px}
+ [data-dcs-content] {padding-top:0!important}
+ [data-dcs-content] > :first-child {padding:8px 16px!important}
+ [data-dcs-options] {padding:12px 20px 40px!important}
+}
+@media(prefers-reduced-motion:reduce) {[data-dcs-nav] button {transition:none}}
