@@ -7,7 +7,7 @@ function setup(options={}) {
  let starts=0,stops=0;const cleanups=[];
  if(options.enabled)dom.window.localStorage.setItem(EDIT_KEY,'true');
  const scope={modelDirectories:{directoryFor(){}},sessions:{list:{getSnapshot(){},subscribe(){}},binding(){},fork(){},using(){}},uiConversation:{binding(){}},uiWorkspace:{openSession(){}},effect:fn=>cleanups.push(fn())};
- const ctx=options.unavailable?{}:{inject:(_,fn)=>fn(scope)};
+ const ctx=options.unavailable?{}:{inject:(dependencies,fn)=>{assert.ok(dependencies.includes('remote'));assert.ok(dependencies.includes('remote.session'));return fn(scope);}};
  const features=featureControls(ctx,dom.window.document,()=>{starts++;return ()=>{stops++;};});
  const detach=features.attach(dom.window.document.querySelector('#root'));
  return {dom,features,detach,input:dom.window.document.querySelector('input'),counts:()=>({starts,stops}),cleanup(){features.dispose();detach();for(const off of cleanups)off?.();dom.window.close();}};

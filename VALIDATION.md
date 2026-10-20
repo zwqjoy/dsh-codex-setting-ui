@@ -18,3 +18,12 @@
 - 提交时读取官方 `modelDirectories` 当前选择，等待新分支 `select` 成功后再 prompt，包含 provider/model/reasoningEffort。
 - 新增测试覆盖编辑后切换模型、原文重发、模型应用失败阻止发送、模型切换中阻止建分支。
 - Chromium 使用生成 bundle 验证：不改原文直接发送，编辑框打开后改选模型，新分支先选新模型再发送原文。宿主接口仍为模拟对象；未在真实 App 上验证模型实际运行。
+
+## 0.2.2 真实 App 验证（2026-10-20）
+
+- 补齐可选客户端上下文的 `remote` / `remote.session` 依赖；修复 `cannot get property "remote.session" without inject`。
+- 已将新版文件更新到实际本地插件目录并刷新 App，未改官方文件。
+- 在真实 App 对 `hi` 不改字直接重发：成功创建并打开新分支；没有再次出现依赖错误。
+- 轨迹中的真实请求详情确认模型为用户当前选择的 GLM-5.3，而非历史模型。
+- 模型服务自动重试 5 次后返回 HTTP 502（bad_response_status_code），因此本次验收为“分支、模型同步和请求发送通过；成功回复未通过”。不能声称模型生成全链路成功。
+- 20 项 Node/DOM 测试通过，其中可选服务注入测试新增检查 `remote` / `remote.session` 声明。

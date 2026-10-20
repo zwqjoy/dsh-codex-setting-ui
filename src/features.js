@@ -14,7 +14,7 @@ export function featureControls(ctx, document, mountEditing) {
     for (const notify of listeners) notify();
   }
   // Optional injection: missing chat services never block settings navigation.
-  ctx.inject?.(['sessions', 'uiConversation', 'uiWorkspace', 'modelDirectories'], scope => {
+  ctx.inject?.(['sessions', 'uiConversation', 'uiWorkspace', 'modelDirectories', 'remote', 'remote.session'], scope => {
     scope.effect(() => {
       if (disposed) return;
       services = scope;

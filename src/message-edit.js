@@ -1,4 +1,4 @@
-export const inject = ['sessions', 'uiConversation', 'uiWorkspace', 'modelDirectories'];
+export const inject = ['sessions', 'uiConversation', 'uiWorkspace', 'modelDirectories', 'remote', 'remote.session'];
 export function currentId(state) {
   return state.current || Object.keys(state.byId ?? {}).find(id => state.byId[id].retainedBy?.mainView > 0);
 }
