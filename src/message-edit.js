@@ -1,4 +1,4 @@
-export const inject = ['sessions', 'uiConversation', 'uiWorkspace'];
+export const inject = ['sessions', 'uiConversation', 'uiWorkspace', 'modelDirectories'];
 export function currentId(state) {
   return state.current || Object.keys(state.byId ?? {}).find(id => state.byId[id].retainedBy?.mainView > 0);
 }
@@ -41,6 +41,17 @@ export function makeRequestId() {
   const hex = [...bytes].map(b => b.toString(16).padStart(2, '0')).join('');
   return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
 }
+export async function selectedModel(ctx, sessionId) {
+  const directory = ctx.modelDirectories?.directoryFor(sessionId);
+  if (!directory) throw new Error('当前宿主无法读取模型选择。');
+  if (directory.store.getSnapshot().status === 'selecting') throw new Error('模型仍在切换，请完成后再发送。');
+  await directory.load();
+  const state = directory.store.getSnapshot();
+  if (state.status === 'selecting') throw new Error('模型仍在切换，请完成后再发送。');
+  if (state.status !== 'ready' || !state.current || state.routable === false) throw new Error('当前模型不可用，请重新选择模型。');
+  const {provider, model, reasoningEffort} = state.current;
+  return {provider, model, ...(reasoningEffort === undefined ? {} : {reasoningEffort})};
+}
 export async function resend(ctx, sessionId, plan, text, childState) {
   if (!text.trim()) throw new Error('消息不能为空。');
   const binding = ctx.sessions.binding(sessionId);
@@ -48,10 +59,16 @@ export async function resend(ctx, sessionId, plan, text, childState) {
   const target = ctx.uiConversation.binding(binding).target('chat');
   const fresh = editPlan(binding, target, plan.key);
   if (fresh.seq !== plan.seq || fresh.text !== plan.text || fresh.atSeq !== plan.atSeq) throw new Error('会话已变化，请重新打开编辑。');
+  childState.model ??= await selectedModel(ctx, sessionId);
   // Keep the created child on failure, so retry does not create duplicate branches.
   childState.id ??= await ctx.sessions.fork({sessionId, atSeq: plan.atSeq, increaseTitle: true, onCreated: id => {childState.id = id;}});
   childState.requestId ??= makeRequestId();
   await ctx.sessions.using(childState.id, {source: 'dsh-message-edit'}, async reference => {
+    if (!childState.modelApplied) {
+      const selection = await ctx.modelDirectories.directoryFor(childState.id).select(childState.model);
+      if (!selection.ok) throw new Error(selection.error?.message || '无法应用当前模型，消息未发送。');
+      childState.modelApplied = true;
+    }
     const result = await reference.binding.session.prompt([{type: 'text', text}], 'queue', undefined, childState.requestId);
     if (!result.ok) throw new Error(result.error?.message || '发送失败，请重试。');
     childState.accepted = true;
@@ -80,7 +97,7 @@ export function mount(ctx, doc = document) {
     const actions = doc.createElement('div'); actions.className = 'dme-actions';
     const cancel = doc.createElement('button'); cancel.textContent = '取消'; cancel.onclick = close;
     const send = doc.createElement('button'); send.textContent = '重新发送'; send.className = 'dme-send';
-    const validate = () => {send.disabled = pending || !input.value.trim() || input.value === plan.text;};
+    const validate = () => {send.disabled = pending || !input.value.trim();};
     input.oninput = validate;
     send.onclick = async () => {
       if (pending || send.disabled) return;

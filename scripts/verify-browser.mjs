@@ -24,7 +24,7 @@ try {
   dcsTest.stop();window.calls=[];
   const node={key:'latest',kind:'user',anchorSeq:9,data:{content:[{type:'text',text:'原始问题'}]}};
   const binding={eventSource:{getSnapshot:()=>({entries:[{event:{seq:3,type:'turn/end'}},{event:{seq:4,type:'agent/inbox/spliced',data:{inserted:[{id:'m'}]}}},{event:{seq:9,type:'user/message',data:{id:'m'}}}]}),subscribe:()=>()=>{}},session:{getSnapshot:()=>({running:false}),subscribe:()=>()=>{}}};
-  const disposers=[];const ctx={effect:fn=>{const off=fn();if(off)disposers.push(off);return off;},slots:{entriesOfSlot:()=>dcsTest.catalog.map(options=>({options}))},
+  const disposers=[];window.modelState={status:'ready',routable:true,current:{provider:'p',model:'old'}};const ctx={modelDirectories:{directoryFor:()=>({load:async()=>{},store:{getSnapshot:()=>window.modelState},select:async model=>{calls.push(['select',model]);return {ok:true};}})},effect:fn=>{const off=fn();if(off)disposers.push(off);return off;},slots:{entriesOfSlot:()=>dcsTest.catalog.map(options=>({options}))},
    inject:(_,fn)=>fn(ctx),sessions:{list:{getSnapshot:()=>({current:'parent'}),subscribe:()=>()=>{}},binding:()=>binding,
    fork:async opts=>{calls.push(['fork',opts.atSeq]);return 'child';},using:async(id,opts,fn)=>fn({binding:{session:{prompt:async blocks=>{calls.push(['prompt',blocks]);return {ok:true};}}}})},
    uiConversation:{binding:()=>({target:()=>({getSnapshot:()=>({nodes:new Map([['latest',node]])}),subscribe:()=>()=>{}})})},uiWorkspace:{openSession:async id=>{calls.push(['open',id]);}}};
@@ -37,9 +37,9 @@ try {
  await page.waitForSelector('.dme-button');assert.equal(await page.locator('.dme-button').count(),1);
  await toggle.uncheck();assert.equal(await page.locator('.dme-button').count(),0);
  await toggle.check();await page.locator('[data-shortcut-modal="settings"]').evaluate(el=>el.remove());
- await page.getByRole('button',{name:'编辑消息'}).click();await page.getByRole('textbox',{name:'消息内容'}).fill('修改后的问题');
+ await page.getByRole('button',{name:'编辑消息'}).click();assert.equal(await page.getByRole('button',{name:'重新发送',exact:true}).isEnabled(),true);await page.evaluate(()=>{window.modelState={status:'ready',routable:true,current:{provider:'p',model:'new',reasoningEffort:'high'}};});
  await page.getByRole('button',{name:'重新发送',exact:true}).click();await page.waitForFunction(()=>calls.some(c=>c[0]==='open'));
- assert.deepEqual(await page.evaluate(()=>calls),[['fork',3],['prompt',[{type:'text',text:'修改后的问题'}]],['open','child']]);
+ assert.deepEqual(await page.evaluate(()=>calls),[['fork',3],['select',{provider:'p',model:'new',reasoningEffort:'high'}],['prompt',[{type:'text',text:'原始问题'}]],['open','child']]);
  await page.evaluate(()=>stopCombined());assert.equal(await page.locator('.dme-button').count(),0);assert.equal(await page.locator('#copy').count(),1);
  // Confirm original layout still fits desktop, dark mode, and a narrow viewport.
  await page.evaluate(()=>dcsTest.runtime.apply({effect:fn=>{window.stopVisual=fn();},slots:{entriesOfSlot:()=>dcsTest.catalog.map(options=>({options}))}}));

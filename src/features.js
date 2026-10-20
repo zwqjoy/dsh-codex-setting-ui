@@ -14,13 +14,13 @@ export function featureControls(ctx, document, mountEditing) {
     for (const notify of listeners) notify();
   }
   // Optional injection: missing chat services never block settings navigation.
-  ctx.inject?.(['sessions', 'uiConversation', 'uiWorkspace'], scope => {
+  ctx.inject?.(['sessions', 'uiConversation', 'uiWorkspace', 'modelDirectories'], scope => {
     scope.effect(() => {
       if (disposed) return;
       services = scope;
       available = typeof scope.sessions?.list?.getSnapshot === 'function' && typeof scope.sessions?.list?.subscribe === 'function' && typeof scope.sessions?.binding === 'function' && typeof scope.sessions?.fork === 'function' &&
         typeof scope.sessions?.using === 'function' && typeof scope.uiConversation?.binding === 'function' &&
-        typeof scope.uiWorkspace?.openSession === 'function';
+        typeof scope.uiWorkspace?.openSession === 'function' && typeof scope.modelDirectories?.directoryFor === 'function';
       sync();
       return () => { available = false; services = undefined; sync(); };
     });
